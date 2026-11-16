@@ -1014,7 +1014,9 @@ import java.util.Comparator;
 public class MealRecommender {
 
     private static final int OPTIONS_PER_SLOT = 3;
+    //num of options to choose from for every course
     private static final double CALORIE_TOLERANCE = 0.15;
+    //15% tolerance for exceeding or short calories. for ex target: 600, it tolerates 510 and 690 since 15% od 600 is 90
 
     private final FoodDatabase foodDatabase;
 
@@ -1025,7 +1027,7 @@ public class MealRecommender {
     public MealPlan generatePlan(UserProfile profile, int targetCalories) {
         MealPlan plan = new MealPlan(profile, targetCalories);
 
-        plan.setSlotEnabled(FoodItem.MealType.BREAKFAST, profile.isIncludeBreakfast());
+        plan.setSlotEnabled(FoodItem.MealType.BREAKFAST, profile.isIncludeBreakfast()); //checks if user wants breakfast(same as lunch, dinner, and snacks)
         plan.setSlotEnabled(FoodItem.MealType.LUNCH, profile.isIncludeLunch());
         plan.setSlotEnabled(FoodItem.MealType.DINNER, profile.isIncludeDinner());
         plan.setSlotEnabled(FoodItem.MealType.SNACK, profile.isIncludeSnack());
@@ -1036,10 +1038,10 @@ public class MealRecommender {
             } else {
                 plan.setOptions(type, selectOptions(type, plan.getBudget(type), profile));
             }
-        }
-        return plan;
-    }
-
+        } //checking enabled courses. a skipped course receive no options
+        return plan; //returns complete plan for each enabled courses
+    } //this sppecific block of code (MealPlan generatePlan(UserProfile profile, int targetCalories)), acts as a blueprint of things we can use later such as accessing user profile, target calories, courses, options for each course. these data will be used later to evaluate what meals are elligible .
+ 
     /** Rebuild every enabled course. Used after the user skips a course. */
     public void regenerateEnabledSlots(MealPlan plan) {
         UserProfile profile = plan.getUserProfile();
@@ -1051,26 +1053,26 @@ public class MealRecommender {
                 plan.setOptions(type, selectOptions(type, plan.getBudget(type), profile));
             }
         }
-    }
+    } //this block of code rebuilds options for every enabled course if the user skipped a course. this is used if a user skipped a meal after the plan was already made. this is important for the calorie target distribution.
 
     public ArrayList<MealOption> selectOptions(FoodItem.MealType type, int budget,
                                                UserProfile profile) {
         ArrayList<FoodItem> candidates = getCandidates(type, profile);
         if (candidates.isEmpty()) {
             return new ArrayList<>();
-        }
+        } //storage for all elligible foods from profile
 
         ArrayList<ScoredFood> scored = new ArrayList<>();
         for (FoodItem food : candidates) {
             double score = scoreFood(food, budget, profile);
             String reason = buildReason(food, budget, profile);
             scored.add(new ScoredFood(food, score, reason));
-        }
+        } // stores data for scored foods
 
         scored.sort(new Comparator<ScoredFood>() {
             public int compare(ScoredFood a, ScoredFood b) {
                 return Double.compare(b.score, a.score);
-            }
+            } // this sorts the foods by score
         });
 
         ArrayList<MealOption> options = new ArrayList<>();
@@ -1085,7 +1087,7 @@ public class MealRecommender {
                 options.add(new MealOption(candidate.food, candidate.score, candidate.reason));
                 usedMainTags.add(mainTag);
             }
-        }
+        } //prevents having multiple main protein provider
 
         // Second pass: fill up to three if there were not enough different tags.
         for (ScoredFood candidate : scored) {
@@ -1093,12 +1095,12 @@ public class MealRecommender {
             if (!containsFood(options, candidate.food.getId())) {
                 options.add(new MealOption(candidate.food, candidate.score, candidate.reason));
             }
-        }
+        }// fill remaining spaces
 
         for (MealOption option : options) {
             fitOptionToBudget(option, budget);
         }
-        return options;
+        return options; //this controls the portions of calories  for every option
     }
 
     // ---------------------------------------------------------------
@@ -1114,15 +1116,15 @@ public class MealRecommender {
             for (String tag : excludeTags) {
                 if (food.hasTag(tag)) {
                     excluded = true;
-                    break;
+                    break; //excludes invalid foods by checking if it has been tagged
                 }
             }
             if (!excluded) {
                 result.add(food);
-            }
+            } //add valid foods
         }
         return result;
-    }
+    } // this method retrieves and fikters foods 
 
     private ArrayList<String> buildExclusionTags(UserProfile profile) {
         ArrayList<String> tags = new ArrayList<>();
@@ -1256,12 +1258,12 @@ public class MealRecommender {
             score += 2.0;
         } else if (difference <= budget * 0.30) {
             score += 1.0;
-        }
+        } //use calorie tolerance to score food if within 15%, receive 2.0, if within 30, receive 1.5, 0 if neither
 
         if (profile.getDailyPreference() != UserProfile.DailyPreference.ANY
                 && matchesMood(food, profile.getDailyPreference())) {
             score += 1.5;
-        }
+        } //checks if the food matches user daily preference, if it does, then add 1.5 to the food
 
         if (food.hasTag("popular")) {
             score += 0.3;
@@ -1271,7 +1273,7 @@ public class MealRecommender {
         }
         if (profile.isHalal() && !food.hasTag("pork")) {
             score += 0.2;
-        }
+        } //basically add score depende sa preference
 
         return score;
     }
@@ -1304,7 +1306,7 @@ public class MealRecommender {
             default:
                 return food.hasTag(preference.getTag());
         }
-    }
+    }  //This method determines whether a food matches the user’s selected daily mood. if gusto nila for example chicken
 
     private String buildReason(FoodItem food, int budget, UserProfile profile) {
         StringBuilder reason = new StringBuilder();
@@ -1328,7 +1330,7 @@ public class MealRecommender {
         }
 
         return reason.toString();
-    }
+    } //This creates the explanation shown to the user.
 
     private String getMainProteinTag(FoodItem food) {
         if (food.hasTag("pork") || food.hasTag("ground-pork")) return "pork";
@@ -1341,7 +1343,7 @@ public class MealRecommender {
         if (food.hasTag("tofu") || food.hasTag("soy")) return "tofu";
         if (food.hasTag("beans")) return "beans";
         return "other";
-    }
+    } //assigns each food to main-protein category. This data will be used to prevent more than one main-protein food provider
 
     // ---------------------------------------------------------------
     // Portion fitting
@@ -1349,20 +1351,21 @@ public class MealRecommender {
 
     private void fitOptionToBudget(MealOption option, int budget) {
         FoodItem food = option.getFoodItem();
-        double rawPortions = (double) budget / Math.max(1, food.getCalories());
+        double rawPortions = (double) budget / Math.max(1, food.getCalories()); //calculates  how many original servings would reach the budget.
         double portions = Math.round(rawPortions * 2.0) / 2.0;
 
         if (portions < 1.0) portions = 1.0;
         if (portions > 3.0) portions = 3.0;
+        //The user receives between one and three servings. This limits the portions
 
-        option.setPortions(portions);
+        option.setPortions(portions); // then calculates calories and macros using the new portions.
 
         if (portions != 1.0) {
             // The first part of the old reason was based on one serving.
             // Replace it with a phrase that matches the scaled portion.
-            String kept = stripCalorieFitReason(option.getReason());
+            String kept = stripCalorieFitReason(option.getReason()); //keeps  the reason from before eg Matches moof, popular choice,etc
             int finalDifference = option.getCalories() - budget;
-            String fitReason;
+            String fitReason; //add reasons such as good portion fiit showm below
 
             if (Math.abs(finalDifference) <= budget * CALORIE_TOLERANCE) {
                 fitReason = "Good portion fit";
@@ -1388,7 +1391,7 @@ public class MealRecommender {
             return reason.substring(separator + 3);
         }
         return "";
-    }
+    } //This removes the first calorie-related phrase while keeping later explanations.
 
     private boolean containsFood(ArrayList<MealOption> options, int foodId) {
         for (MealOption option : options) {
@@ -1397,7 +1400,7 @@ public class MealRecommender {
             }
         }
         return false;
-    }
+    } // this changes food into id so that it can oonly be used once
 
     /** Small helper that holds one food and its score before sorting. */
     private static class ScoredFood {
