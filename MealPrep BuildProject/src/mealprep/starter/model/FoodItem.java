@@ -7,7 +7,7 @@ package mealprep.starter.model;
  * Edition keeps only the fields it needs.
  */
 public class FoodItem {
-
+    // attributes
     private int id;
     private String name;
     private String category;
@@ -19,10 +19,12 @@ public class FoodItem {
     private String servingSize;
     private String tags;
 
+    // meal types constants
     public enum MealType {
         BREAKFAST, LUNCH, DINNER, SNACK
     }
 
+    // constructor
     public FoodItem(int id, String name, String category, String mealTypeText,
                     int calories, double protein, double carbs, double fat,
                     String servingSize, String tags) {
@@ -38,6 +40,7 @@ public class FoodItem {
         this.tags = tags.toLowerCase();
     }
 
+    // String to MealType (LUNCH is default)
     private MealType parseMealType(String text) {
         try {
             return MealType.valueOf(text.trim().toUpperCase());
@@ -46,6 +49,7 @@ public class FoodItem {
         }
     }
 
+    // getters
     public int getId() { return id; }
     public String getName() { return name; }
     public String getCategory() { return category; }
@@ -57,10 +61,7 @@ public class FoodItem {
     public String getServingSize() { return servingSize; }
     public String getTags() { return tags; }
 
-    /**
-     * Exact tag match. We compare whole tags so that "milk" does not match
-     * the tag "milkfish".
-     */
+    // Exact tag match. We compare whole tags so that "milk" does not match the tag "milkfish"
     public boolean hasTag(String tag) {
         if (tag == null || tags == null) return false;
 
@@ -77,6 +78,7 @@ public class FoodItem {
     }
 
     @Override
+    // get String of this object or class
     public String toString() {
         return String.format("%s (%s) - %d kcal | P:%.1f C:%.1f F:%.1f",
                 name, servingSize, calories, protein, carbs, fat);

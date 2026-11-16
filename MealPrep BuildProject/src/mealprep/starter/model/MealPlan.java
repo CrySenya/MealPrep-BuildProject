@@ -2,7 +2,7 @@ package mealprep.starter.model;
 
 import java.util.ArrayList;
 
-/**
+/*
  * The four course budgets and the three options offered for each course.
  *
  * If a course is skipped, its percentage is removed from the total and the
@@ -11,27 +11,32 @@ import java.util.ArrayList;
  *   breakfast skipped -> breakfast 0, lunch 817, dinner 700, snacks 233
  */
 public class MealPlan {
-
+    // percentage of each meals
     public static final double BREAKFAST_PCT = 0.25;
     public static final double LUNCH_PCT = 0.35;
     public static final double DINNER_PCT = 0.30;
     public static final double SNACK_PCT = 0.10;
 
+    // attributes
     private int targetCalories;
     private UserProfile userProfile;
 
+    // options for each meals
     private ArrayList<MealOption> breakfastOptions = new ArrayList<>();
     private ArrayList<MealOption> lunchOptions = new ArrayList<>();
     private ArrayList<MealOption> dinnerOptions = new ArrayList<>();
     private ArrayList<MealOption> snackOptions = new ArrayList<>();
 
+    // which meals is enabled
     private boolean[] enabled = {true, true, true, true};
 
+    // constructor
     public MealPlan(UserProfile userProfile, int targetCalories) {
         this.userProfile = userProfile;
         this.targetCalories = targetCalories;
     }
 
+    // turn MealType to String
     public static String getSlotName(FoodItem.MealType type) {
         switch (type) {
             case BREAKFAST: return "Breakfast";
@@ -42,6 +47,7 @@ public class MealPlan {
         }
     }
 
+    // get base percentage of each meal
     public static double getBasePercentage(FoodItem.MealType type) {
         switch (type) {
             case BREAKFAST: return BREAKFAST_PCT;
@@ -52,14 +58,15 @@ public class MealPlan {
         }
     }
 
+    // get and set slots
     public boolean isSlotEnabled(FoodItem.MealType type) {
         return enabled[type.ordinal()];
     }
-
     public void setSlotEnabled(FoodItem.MealType type, boolean value) {
         enabled[type.ordinal()] = value;
     }
 
+    // get number of slots that are enabled (true)
     public int getEnabledSlotCount() {
         int count = 0;
         for (int i = 0; i < enabled.length; i++) {
@@ -68,10 +75,8 @@ public class MealPlan {
         return count;
     }
 
-    /**
-     * Budget for one course after skipped courses are redistributed.
-     * Returns 0 when the course is skipped.
-     */
+    // Budget for one course after skipped courses are redistributed.
+    // Returns 0 when the course is skipped.
     public int getBudget(FoodItem.MealType type) {
         if (!isSlotEnabled(type)) return 0;
 
@@ -86,11 +91,13 @@ public class MealPlan {
         return (int) Math.round(targetCalories * getBasePercentage(type) / enabledPercentage);
     }
 
+    // get budget for each meal
     public int getBreakfastBudget() { return getBudget(FoodItem.MealType.BREAKFAST); }
     public int getLunchBudget()     { return getBudget(FoodItem.MealType.LUNCH); }
     public int getDinnerBudget()    { return getBudget(FoodItem.MealType.DINNER); }
     public int getSnackBudget()     { return getBudget(FoodItem.MealType.SNACK); }
 
+    // get options for each meal
     public ArrayList<MealOption> getBreakfastOptions() { return breakfastOptions; }
     public ArrayList<MealOption> getLunchOptions()     { return lunchOptions; }
     public ArrayList<MealOption> getDinnerOptions()    { return dinnerOptions; }
@@ -106,6 +113,7 @@ public class MealPlan {
         }
     }
 
+    // set meal options
     public void setOptions(FoodItem.MealType type, ArrayList<MealOption> options) {
         switch (type) {
             case BREAKFAST: breakfastOptions = options; break;
@@ -115,7 +123,7 @@ public class MealPlan {
         }
     }
 
-    /** The option the user picked for one course, or null. */
+    // The option the user picked for one course, or null.
     public MealOption getSelectedOption(FoodItem.MealType type) {
         for (MealOption option : getOptions(type)) {
             if (option.isSelected()) {
@@ -125,6 +133,7 @@ public class MealPlan {
         return null;
     }
 
+    // check if plan is complete
     public boolean isComplete() {
         for (FoodItem.MealType type : FoodItem.MealType.values()) {
             if (isSlotEnabled(type) && getOptions(type).isEmpty()) {
@@ -134,11 +143,12 @@ public class MealPlan {
         return getEnabledSlotCount() > 0;
     }
 
+    // getter and setter of TargetCalories, and getter for UserProfile
     public int getTargetCalories() { return targetCalories; }
     public UserProfile getUserProfile() { return userProfile; }
-
     public void setTargetCalories(int targetCalories) { this.targetCalories = targetCalories; }
 
+    // get the calories of the selected option
     public int getSelectedCalories() {
         int total = 0;
         for (FoodItem.MealType type : FoodItem.MealType.values()) {
@@ -151,10 +161,12 @@ public class MealPlan {
         return total;
     }
 
+    // get the value for each macronutrients of the option
     public double getSelectedProtein() { return getSelectedMacro("protein"); }
     public double getSelectedCarbs()   { return getSelectedMacro("carbs"); }
     public double getSelectedFat()     { return getSelectedMacro("fat"); }
 
+    // get the macronutrient value from the option
     private double getSelectedMacro(String macro) {
         double total = 0;
         for (FoodItem.MealType type : FoodItem.MealType.values()) {
@@ -173,6 +185,7 @@ public class MealPlan {
         return total;
     }
 
+    // compares the selected calories to the target calories
     public String getCalorieStatus() {
         int selected = getSelectedCalories();
         if (selected == 0) {
@@ -190,6 +203,7 @@ public class MealPlan {
     }
 
     @Override
+    // get String of the object
     public String toString() {
         return String.format("MealPlan[target=%d kcal, selected=%d kcal, enabled=%d/4]",
                 targetCalories, getSelectedCalories(), getEnabledSlotCount());
