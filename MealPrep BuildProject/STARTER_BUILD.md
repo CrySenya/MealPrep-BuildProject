@@ -1564,10 +1564,11 @@ import mealprep.starter.model.UserProfile;
  * Run this before the GUI:
  *   java -cp out mealprep.starter.StarterApp
  */
-public class StarterApp {
+public class StarterApp { //this phase runs the program first and it acts as a checker if any there are problems in database, calculator, etc. before proceeding with the GUI
 
     private static int passed = 0;
     private static int failed = 0;
+    //this declarations store number of succesful and failed test
 
     public static void main(String[] args) {
         System.out.println("=======================================");
@@ -1579,10 +1580,12 @@ public class StarterApp {
             System.err.println("Failed to load data/philippine_foods.csv");
             System.err.println("Run this program from the starter folder.");
             return;
-        }
+        } //this if statement checcks wether the database is loading.
+
+        //The return statement is important. It prevents the application from running tests when the required food data is missing. If the database is working then proceed
         System.out.println(foodDatabase + "\n");
 
-        runSelfTests(foodDatabase);
+        runSelfTests(foodDatabase); //now this runs the 26 tests
 
         MealPlanGenerator generator = new MealPlanGenerator(foodDatabase);
 
@@ -1590,6 +1593,7 @@ public class StarterApp {
         UserProfile user = createTestUser();
         MealPlan plan = generator.generatePlan(user);
         System.out.println(generator.describePlan(plan));
+        //This creates a standard test user, generates a complete meal plan, and prints it. only a demo
 
         System.out.println("--- DEMO: SKIP BREAKFAST ---");
         UserProfile skipUser = createTestUser();
@@ -1603,9 +1607,12 @@ public class StarterApp {
         System.out.println("Selected total:   " + skipPlan.getSelectedCalories() + " kcal\n");
         System.out.println(generator.describePlan(skipPlan));
 
+        //this demo is a demo user who skip courses
+
         System.out.println("=======================================");
         System.out.println("SELF-TESTS: " + passed + " passed, " + failed + " failed");
         System.out.println("=======================================");
+        //this prints the counted self test results the passed and failed. below are the basis of the score
     }
 
     private static void runSelfTests(FoodDatabase foodDatabase) {
@@ -1613,13 +1620,17 @@ public class StarterApp {
 
         UserProfile user = createTestUser();
 
-        // 1. Database
+        // 1. Database 
+        //This checks two database requirements:
+        //The database contains at least 50 foods.
+        //Every meal type contains at least one food.
         check("database has at least 50 foods", foodDatabase.size() >= 50);
         for (FoodItem.MealType type : FoodItem.MealType.values()) {
             check(type + " has foods", foodDatabase.size(type) > 0);
         }
 
         // 2. Calorie formulas
+        //this use a demo user which tests the calculations for calorie plan. Basically checking the CalorieCalculatpr
         check("female BMR = 1279",
                 Math.abs(CalorieCalculator.calculateBMR(user) - 1279) < 0.01);
         check("target is rounded to 50",
@@ -1628,6 +1639,7 @@ public class StarterApp {
                 Math.abs(CalorieCalculator.calculateBMI(user) - 21.5) < 0.01);
 
         // 3. Skip-aware budgets
+        //this naman uses the dummy to check if the budget calculator works if a user skips a meal
         MealPlan budgetPlan = new MealPlan(user, 2000);
         check("all-course budgets sum to 2000", budgetSum(budgetPlan) == 2000);
 
@@ -1637,12 +1649,19 @@ public class StarterApp {
         check("lunch budget grows after skipping breakfast", budgetPlan.getLunchBudget() > 700);
 
         // 4. Exact tag matching
+        //the purpose of this is to checck wether FoodItem.hasTag() is working or yeah like it uses exact matching like for example tag should exactly be milkfish and will not be tagged if system scans through "milk" only
         FoodItem bangus = foodDatabase.getFoodById(3);
         check("bangus has the milkfish tag", bangus != null && bangus.hasTag("milkfish"));
         check("dairy 'milk' does not match 'milkfish'",
                 bangus != null && !bangus.hasTag("milk"));
 
         // 5. Three options per course
+        //this naman checks output requirements
+        //No course has more than three options.
+        //Every enabled course has at least one option.
+        //The selected total is greater than zero.
+        //Every enabled course has one automatically selected meal.
+        //Portions stay between 1.0 and 3.0.
         MealPlanGenerator generator = new MealPlanGenerator(foodDatabase);
         MealPlan normal = generator.generatePlan(createTestUser());
 
@@ -1653,11 +1672,14 @@ public class StarterApp {
         check("portions stay between 1.0 and 3.0", portionsInRange(normal));
 
         // 6. Filters
+        //this test is crucial for checking unsuitable foods.
         UserProfile dairy = createTestUser();
         dairy.setAllergies(new String[]{"dairy"});
         MealPlan dairyPlan = generator.generatePlan(dairy);
         check("dairy allergy removes milk, cheese, cream and butter",
                 noTags(dairyPlan, new String[]{"milk", "cheese", "cream", "butter"}));
+        //checking for allergies
+        
 
         UserProfile vegetarian = createTestUser();
         vegetarian.setVegetarian(true);
@@ -1666,12 +1688,14 @@ public class StarterApp {
                 noTags(vegetarianPlan, new String[]{"pork", "ground-pork", "beef", "oxtail",
                         "chicken", "duck", "fish", "milkfish", "tilapia", "salmon",
                         "seafood", "shrimp", "crab", "squid"}));
+        //removing foods unsuitable for vegetarians
 
         UserProfile noPork = createTestUser();
         noPork.setDislikes(new String[]{"pork"});
         MealPlan noPorkPlan = generator.generatePlan(noPork);
         check("pork dislike removes pork dishes",
                 noTags(noPorkPlan, new String[]{"pork", "ground-pork"}));
+        //if user doesnt want posk
 
         // 7. Skipping a course
         UserProfile skipUser = createTestUser();
@@ -1684,6 +1708,7 @@ public class StarterApp {
                 skipPlan.getLunchBudget() == 817
                         && skipPlan.getDinnerBudget() == 700
                         && skipPlan.getSnackBudget() == 233);
+        //this section verifies the calculation of calorie target  distribution if the user skips a course
 
         // 8. Every non-empty combination of courses still gets options.
         boolean allCombinationsOk = true;
@@ -1704,7 +1729,16 @@ public class StarterApp {
         check("every option has a reason", everyOptionHasReason(normal));
 
         System.out.println();
-    }
+    } //this checks all possible combinations including skipping courses, etc. nstead of manually writing 15 separate test cases, one loop checks every possible combination.
+
+        //It protects against edge-case errors such as:
+
+        //A specific course producing no options
+        //A zero budget accidentally being used
+        //Disabled courses still appearing
+        //Incorrect percentage normalization
+        //Recommender failures that only happen for one course combination
+        //If a combination fails, the mask is printed so the developer can reproduce it.
 
     private static UserProfile createTestUser() {
         UserProfile profile = new UserProfile();
@@ -1720,7 +1754,7 @@ public class StarterApp {
         profile.setVegetarian(false);
         profile.setHalal(false);
         return profile;
-    }
+    } //this is a test profile
 
     private static int budgetSum(MealPlan plan) {
         int sum = 0;
@@ -1758,7 +1792,7 @@ public class StarterApp {
             }
         }
         return count;
-    }
+    } //These helper methods inspect different properties of a generated MealPlan such as budgetSum, maxOptions, minOptions, countEnabledOptions
 
     private static boolean everyEnabledCourseHasPick(MealPlan plan) {
         for (FoodItem.MealType type : FoodItem.MealType.values()) {
@@ -1803,7 +1837,7 @@ public class StarterApp {
             }
         }
         return true;
-    }
+    } //These methods test the result from the user’s point of view.
 
     private static void check(String label, boolean condition) {
         if (condition) {
@@ -1814,7 +1848,7 @@ public class StarterApp {
             System.out.println("  FAIL: " + label);
         }
     }
-}
+} //this counts the passed tests and failed tests
 ~~~
 
 ---
