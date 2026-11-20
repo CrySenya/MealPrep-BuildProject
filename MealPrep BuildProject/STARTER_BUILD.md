@@ -3286,17 +3286,19 @@ public class StarterSummaryPanel extends JPanel {
 
 ## Phase 14. Build and run
 
-### `build.bat`
+### `build.bat` 
 
 ~~~bat
 @echo off
 REM Build every Java file under src\ into out\
 setlocal
 if not exist out mkdir out
+REM This is only for seperaation. src is the java source and out is the compiled runnable code
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "$files = Get-ChildItem -Recurse -Path 'src' -Filter '*.java' | ForEach-Object { $_.FullName }; " ^
   "& javac -encoding UTF-8 -d out $files; exit $LASTEXITCODE"
+REM -NoProfile prevents a user-specific PowerShell profile from changing the behavior.-ExecutionPolicy Bypass allows the local command to run in environments where script execution is restricted.-Command tells PowerShell to execute the following text.^ continues the command on the next line in a Windows batch file.
 set RESULT=%ERRORLEVEL%
 
 if %RESULT% neq 0 (
@@ -3304,12 +3306,15 @@ if %RESULT% neq 0 (
     echo BUILD FAILED - read the errors above.
     exit /b %RESULT%
 )
-
+REM This group prevents a broken build from appearing successful. Without it, the script might print:
+ 
 echo.
 echo BUILD OK. Next:
 echo   run-console.bat   - self-tests + console demo
 echo   run-gui.bat       - Swing application
 endlocal
+
+REM This group runs only when the compilation succeeded.. This group gives the developer clear instructions about what to do next.
 ~~~
 
 ### `run-console.bat`
@@ -3321,6 +3326,7 @@ if not exist out\mealprep\starter\StarterApp.class (
     exit /b 1
 )
 java -cp out mealprep.starter.StarterApp
+REM This group runs Phase 9’s console entry point.That program performs:Database loading,  All 26 self-testsNormal meal-plan demonstration, Skip-breakfast demonstration,  Final test summary, This is the safest way to verify your project before opening the GUI.
 ~~~
 
 ### `run-gui.bat`
@@ -3332,14 +3338,17 @@ if not exist out\mealprep\starter\gui\StarterGUI.class (
     exit /b 1
 )
 java -cp out mealprep.starter.gui.StarterGUI
+REM This group provides a simple, repeatable way to launch the completed application.A user does not need to remember the correct Java classpath or class name. They only need to run: .\run-gui.bat
 ~~~
 
 Run from the Starter project root:
-
+This sequence separates the project into three stages:COMPILE → VERIFY → USE
 ~~~powershell
 .\build.bat
 .\run-console.bat
 .\run-gui.bat
+
+
 ~~~
 
 Expected console ending:
