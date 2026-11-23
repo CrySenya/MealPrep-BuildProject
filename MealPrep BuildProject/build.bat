@@ -1,4 +1,5 @@
 @echo off
+REM Build every Java file under src\ into out\
 setlocal
 if not exist out mkdir out
 
@@ -14,5 +15,5 @@ if %RESULT% neq 0 (
 )
 
 echo.
-echo BUILD OK.
+echo BUILD OK. Next:
 endlocal

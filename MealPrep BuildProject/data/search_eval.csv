@@ -1,0 +1,101 @@
+query,expected_id
+tapsilog,1
+longsilog,2
+bangsilog,3
+champorado,4
+arroz,5
+pandesal,6
+daing,8
+hotdog,10
+lugaw,13
+silog,15
+caldereta,21
+menudo,23
+nilagang,25
+bistek,26
+lechon,27
+lumpiang,28
+canton,29
+bihon,30
+monggo,31
+pinakbet,32
+laing,33
+gulay,34
+chopsuey,35
+broccoli,36
+inihaw,38
+barbecue,41
+rellenong,42
+ensaladang,43
+ampalaya,44
+giniling,45
+tanigue,46
+hipon,49
+tilapia,50
+nilaga,52
+sitaw,54
+pininyahang,55
+fillet,57
+vegetable,59
+alimasag,61
+bagoong,62
+samlon,63
+caomte,67
+kutisnta,68
+fisbhall,71
+empnaada,73
+gualman,76
+padnan,77
+blnaca,79
+bubmong,80
+ensyamada,82
+chihcaron,85
+tokenneng,88
+calmaares,89
+spahgetti,903
+reuglar,908
+fiseta,909
+pacnake,911
+mcspgahetti,923
+qurater,924
+mccihcken,925
+cheesbeurger,926
+meidum,927
+hotackes,928
+mcfulrry,930
+sasuage,931
+simoai,980
+watnon,982
+sipoao,984
+cognee,985
+zigner,1001
+talong tortang,7
+adobo chicken,16
+adobo pork,17
+kare kare,20
+belly bangus,40
+tinola chicken,48
+sinigang pork,51
+upo ginisang,53
+afritada chicken,58
+curry chicken,64
+cue banana,66
+pichi pichi,69
+kwek kwek,72
+flan leche,78
+bread spanish,84
+yumburger cheesy,905
+mac big,920
+burger ribshack,963
+corn grilled,964
+shots hot,1002
+chicken inasal,39
+halo halo,74
+halo halo,944
+halo halo,983
+double burger,1080
+chicken quesadilla,1081
+goto,14
+lapu,47
+turon,65
+taho,70
